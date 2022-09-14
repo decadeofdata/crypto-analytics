@@ -24,14 +24,21 @@ def load_data(ticker):
 	
 data_load_state = st.text('Loading data...')
 data = load_data(selected_symbol)
-data_load_state.text('Loading data... done!')
+data_load_state.text('Updated.')
 
 # Plot raw data
+
+# Gets latest price
+closePrices = data['Close']
+lastPrice = closePrices.iloc[-1]
+lastPrice = round(lastPrice, 2)
+plotTitle = "Crypto price $" + str(lastPrice)
+
 def plot_raw_data():
 	fig = go.Figure()
-	fig.add_trace(go.Scatter(x=data['Date'], y=data['Open'], name="stock_open"))
-	fig.add_trace(go.Scatter(x=data['Date'], y=data['Close'], name="stock_close"))
-	fig.layout.update(title_text='Crypto price $', xaxis_rangeslider_visible=True)
+	fig.add_trace(go.Scatter(x = data['Date'], y = data['Open'], name = "stock_open"))
+	fig.add_trace(go.Scatter(x = data['Date'], y = data['Close'], name = "stock_close"))
+	fig.layout.update(title_text = plotTitle, xaxis_rangeslider_visible=True)
 	st.plotly_chart(fig)
 	
 plot_raw_data()
@@ -43,12 +50,16 @@ st.line_chart(data.Volume)
 st.subheader('Raw data')
 st.write(data.tail())
 
+# Predict forecast with Prophet.
+
+st.subheader('Forecast demonstration')
+st.text("This is not financial advice. This is a demonstration for the forecast feature \n we are working on. You will lose money if you follow these predictions.")
+
 # Slider
 
 n_years = st.slider('Years of prediction:', 1, 4)
 period = n_years * 365
 
-# Predict forecast with Prophet.
 df_train = data[['Date','Close']]
 df_train = df_train.rename(columns={"Date": "ds", "Close": "y"})
 
@@ -59,6 +70,7 @@ forecast = m.predict(future)
 
 # Show and plot forecast
 st.subheader('Forecast data')
+
 st.write(forecast.tail())
     
 st.write(f'Forecast plot for {n_years} years')
